@@ -42,8 +42,8 @@ export class AudioController {
       this.sfxGain.connect(this.audioContext.destination);
       
       // Set initial volumes
-      this.musicGain.gain.value = 0.4; // Background music at 40% volume
-      this.sfxGain.gain.value = 0.3;   // Sound effects at 30% volume
+      this.musicGain.gain.value = 0.8; // Background music at 80% volume
+      this.sfxGain.gain.value = 0.6;   // Sound effects at 60% volume
     } catch (e) {
       console.error('Web Audio API is not supported in this browser:', e);
     }
@@ -283,8 +283,8 @@ export class AudioController {
       `;
       
       // Unmute all sounds
-      if (this.musicGain) this.musicGain.gain.value = 0.4;
-      if (this.sfxGain) this.sfxGain.gain.value = 0.3;
+      if (this.musicGain) this.musicGain.gain.value = 0.8;
+      if (this.sfxGain) this.sfxGain.gain.value = 0.6;
       
       // Resume the audio element if it exists
       if (this.musicElement) {

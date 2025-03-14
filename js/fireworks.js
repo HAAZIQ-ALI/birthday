@@ -118,6 +118,11 @@ export class Fireworks {
   
   // Update firework position
   updateFirework(firework, index) {
+    // Initialize trail array if it doesn't exist
+    if (!firework.trail) {
+      firework.trail = [];
+    }
+    
     // Add current position to trail
     firework.trail.push({x: firework.x, y: firework.y, alpha: firework.alpha});
     
@@ -163,6 +168,11 @@ export class Fireworks {
   drawFirework(firework) {
     // Draw trail
     this.ctx.beginPath();
+    
+    // Make sure trail array exists and has elements before trying to access them
+    if (!firework.trail || firework.trail.length === 0) {
+      firework.trail = [{x: firework.x, y: firework.y, alpha: firework.alpha}];
+    }
     
     // Trail gradient
     const trailGradient = this.ctx.createLinearGradient(
