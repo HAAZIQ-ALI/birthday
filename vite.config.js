@@ -6,9 +6,8 @@ export default {
     fs: {
       strict: false
     },
-    hmr: {
-      clientPort: 443
-    },
+    hmr: false
+  ,
     cors: true,
     allowedHosts: [
       '925d52c6-51dc-4b1d-846c-c17a7c095737-00-1s0hcvixyaip9.janeway.replit.dev',
