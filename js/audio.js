@@ -20,7 +20,11 @@ export class AudioController {
     this.createAudioContext();
     
     // Setup mute button click handler
-    this.muteButton.addEventListener('click', () => this.toggleMute());
+    if (this.muteButton) {
+      this.muteButton.addEventListener('click', () => this.toggleMute());
+    } else {
+      console.warn('Mute button not found in the DOM');
+    }
   }
   
   createAudioContext() {
@@ -176,27 +180,69 @@ export class AudioController {
   }
   
   startBackgroundMusic() {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
-    }
-    
-    if (!this.musicPlaying && !this.muted) {
-      // Create an audio element for the music instead of generating it
-      const audioElement = new Audio('./assets/WhatsApp Audio 2025-03-14 at 6.26.55 PM.mpeg');
-      audioElement.loop = true;
+    try {
+      if (!this.audioContext) {
+        console.error('Audio context not available');
+        return;
+      }
       
-      // Connect to the Web Audio API for volume control
-      const source = this.audioContext.createMediaElementSource(audioElement);
-      source.connect(this.musicGain);
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume().catch(err => {
+          console.error('Failed to resume audio context:', err);
+        });
+      }
       
-      // Start playback
-      audioElement.play().catch(e => {
-        console.error('Error playing audio:', e);
-      });
-      
-      // Store the audio element for later reference
-      this.musicElement = audioElement;
-      this.musicPlaying = true;
+      if (!this.musicPlaying && !this.muted) {
+        console.log('Starting background music...');
+        
+        // Create an audio element for the music
+        const audioElement = new Audio('./attached_assets/WhatsApp Audio 2025-03-14 at 6.26.55 PM.mpeg');
+        audioElement.loop = true;
+        
+        // Add error and loading event handlers
+        audioElement.addEventListener('error', (e) => {
+          console.error('Audio element error:', e);
+          console.error('Error code:', audioElement.error ? audioElement.error.code : 'unknown');
+          console.error('Error message:', audioElement.error ? audioElement.error.message : 'unknown');
+        });
+        
+        audioElement.addEventListener('canplaythrough', () => {
+          console.log('Audio can play through');
+        });
+        
+        // Connect to the Web Audio API for volume control
+        try {
+          const source = this.audioContext.createMediaElementSource(audioElement);
+          source.connect(this.musicGain);
+          
+          // Start playback
+          const playPromise = audioElement.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              console.log('Audio playback started successfully');
+              // Store the audio element for later reference
+              this.musicElement = audioElement;
+              this.musicPlaying = true;
+            }).catch(err => {
+              console.error('Error playing audio:', err);
+              // Fallback to synthetic audio if needed
+              if (!this.musicPlaying) {
+                console.log('Falling back to synthetic audio');
+                this.createNightDancerMusic();
+                this.musicPlaying = true;
+              }
+            });
+          }
+        } catch (err) {
+          console.error('Error setting up audio:', err);
+          // Fallback to synthetic audio
+          this.createNightDancerMusic();
+          this.musicPlaying = true;
+        }
+      }
+    } catch (e) {
+      console.error('Error in startBackgroundMusic:', e);
     }
   }
   

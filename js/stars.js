@@ -119,49 +119,73 @@ export class Stars {
   
   // Add crescent moon
   addCrescentMoon() {
-    const moonX = this.canvas.width * 0.85;
-    const moonY = this.canvas.height * 0.2;
-    const moonRadius = Math.min(this.canvas.width, this.canvas.height) * 0.06;
-    
-    // Add moon to stars array with special properties
-    this.stars.push({
-      x: moonX,
-      y: moonY,
-      radius: moonRadius,
-      opacity: 0.9,
-      scintillation: 0.01,
-      scintillationSpeed: 0.005,
-      scintillationDirection: 1,
-      isMoon: true,
-      shadowX: moonX + moonRadius * 0.3,
-      shadowY: moonY - moonRadius * 0.1,
-      shadowRadius: moonRadius * 0.95
-    });
+    try {
+      // Check if canvas and stars array exist
+      if (!this.canvas || !this.stars) {
+        console.error('Cannot add crescent moon - canvas or stars array not available');
+        return;
+      }
+      
+      const moonX = this.canvas.width * 0.85;
+      const moonY = this.canvas.height * 0.2;
+      const moonRadius = Math.min(this.canvas.width, this.canvas.height) * 0.06;
+      
+      // Add moon to stars array with special properties
+      this.stars.push({
+        x: moonX,
+        y: moonY,
+        radius: moonRadius,
+        opacity: 0.9,
+        scintillation: 0.01,
+        scintillationSpeed: 0.005,
+        scintillationDirection: 1,
+        isMoon: true,
+        shadowX: moonX + moonRadius * 0.3,
+        shadowY: moonY - moonRadius * 0.1,
+        shadowRadius: moonRadius * 0.95
+      });
+    } catch (e) {
+      console.error('Error adding crescent moon:', e);
+    }
   }
   
   // Animation loop
   animate() {
     if (!this.running) return;
     
-    // Draw stars
-    this.drawStars();
-    
-    // Request next frame
-    requestAnimationFrame(() => this.animate());
+    try {
+      // Draw stars
+      this.drawStars();
+      
+      // Request next frame
+      requestAnimationFrame(() => this.animate());
+    } catch (e) {
+      console.error('Error in animation loop:', e);
+      this.running = false; // Stop animation on error
+    }
   }
   
   // Start animation
   start() {
-    if (!this.running) {
-      this.running = true;
-      
-      // Create stars if they don't exist
-      if (this.stars.length === 0) {
-        this.createStars();
+    try {
+      if (!this.canvas || !this.ctx) {
+        console.error('Cannot start stars animation - canvas or context not available');
+        return;
       }
       
-      // Start animation loop
-      this.animate();
+      if (!this.running) {
+        this.running = true;
+        
+        // Create stars if they don't exist
+        if (!this.stars || this.stars.length === 0) {
+          this.createStars();
+        }
+        
+        // Start animation loop
+        this.animate();
+      }
+    } catch (e) {
+      console.error('Error starting stars animation:', e);
     }
   }
   

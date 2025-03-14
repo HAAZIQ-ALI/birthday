@@ -4,45 +4,65 @@
  */
 export class Fireworks {
   constructor() {
-    // Get canvas element
-    this.canvas = document.getElementById('fireworks-canvas');
-    this.ctx = this.canvas.getContext('2d');
-    
-    // Set canvas dimensions
-    this.resizeCanvas();
-    
-    // Arrays to store fireworks and particles
-    this.fireworks = [];
-    this.particles = [];
-    
-    // Status
-    this.running = false;
-    this.autoFireworks = true;
-    
-    // Callback for sound
-    this.onFireworkExplode = null;
-    
-    // Handle window resize
-    window.addEventListener('resize', () => this.resizeCanvas());
-    
-    // Add click listener for manual fireworks
-    this.canvas.addEventListener('click', (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      this.createFirework(
-        this.canvas.width / 2, 
-        this.canvas.height, 
-        x, 
-        y
-      );
-    });
+    try {
+      // Get canvas element
+      this.canvas = document.getElementById('fireworks-canvas');
+      
+      if (!this.canvas) {
+        console.error('Fireworks canvas element not found!');
+        return;
+      }
+      
+      this.ctx = this.canvas.getContext('2d');
+      
+      // Set canvas dimensions
+      this.resizeCanvas();
+      
+      // Arrays to store fireworks and particles
+      this.fireworks = [];
+      this.particles = [];
+      
+      // Status
+      this.running = false;
+      this.autoFireworks = true;
+      
+      // Callback for sound
+      this.onFireworkExplode = null;
+      
+      // Handle window resize
+      window.addEventListener('resize', () => this.resizeCanvas());
+      
+      // Add click listener for manual fireworks
+      this.canvas.addEventListener('click', (e) => {
+        if (!this.canvas) return;
+        
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        this.createFirework(
+          this.canvas.width / 2, 
+          this.canvas.height, 
+          x, 
+          y
+        );
+      });
+    } catch (e) {
+      console.error('Error initializing fireworks:', e);
+    }
   }
   
   // Update canvas dimensions
   resizeCanvas() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
+    try {
+      if (!this.canvas) {
+        console.error('Canvas not available for resizing');
+        return;
+      }
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    } catch (e) {
+      console.error('Error resizing canvas:', e);
+    }
   }
   
   // Create a new firework
