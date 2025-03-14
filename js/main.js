@@ -40,8 +40,8 @@ function init() {
     // Initialize audio controller
     audioController = new AudioController();
     
-    // Connect fireworks explosions to sound
-    connectFireworksToSound();
+    // Disable firework sounds
+    // connectFireworksToSound();
     
     // Set up periodic firework bursts
     if (fireworks) {

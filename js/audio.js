@@ -181,6 +181,12 @@ export class AudioController {
   
   startBackgroundMusic() {
     try {
+      // If music is already playing, don't start it again
+      if (this.musicPlaying) {
+        console.log('Music already playing, not starting again');
+        return;
+      }
+      
       if (!this.audioContext) {
         console.error('Audio context not available');
         return;
@@ -215,6 +221,9 @@ export class AudioController {
           const source = this.audioContext.createMediaElementSource(audioElement);
           source.connect(this.musicGain);
           
+          // Set flag before attempting to play to prevent multiple starts
+          this.musicPlaying = true;
+          
           // Start playback
           const playPromise = audioElement.play();
           
@@ -223,26 +232,21 @@ export class AudioController {
               console.log('Audio playback started successfully');
               // Store the audio element for later reference
               this.musicElement = audioElement;
-              this.musicPlaying = true;
             }).catch(err => {
               console.error('Error playing audio:', err);
-              // Fallback to synthetic audio if needed
-              if (!this.musicPlaying) {
-                console.log('Falling back to synthetic audio');
-                this.createNightDancerMusic();
-                this.musicPlaying = true;
-              }
+              // Reset flag if playback failed
+              this.musicPlaying = false;
             });
           }
         } catch (err) {
           console.error('Error setting up audio:', err);
-          // Fallback to synthetic audio
-          this.createNightDancerMusic();
-          this.musicPlaying = true;
+          // Reset flag if there was an error
+          this.musicPlaying = false;
         }
       }
     } catch (e) {
       console.error('Error in startBackgroundMusic:', e);
+      this.musicPlaying = false;
     }
   }
   
