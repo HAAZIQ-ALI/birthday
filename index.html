@@ -1,50 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Islamic Birthday Wishes</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Raleway:wght@300;400;600&display=swap">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Wishes for Anas Afroz</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Raleway:wght@300;400;600;700&display=swap">
 </head>
 <body>
-    <div class="preloader">
-        <div class="loader"></div>
-        <p class="loading-text">Loading Celebration...</p>
-    </div>
+  <div class="preloader">
+    <div class="loader"></div>
+    <p class="loading-text">Getting your birthday surprise ready...</p>
+  </div>
 
-    <canvas id="fireworks-canvas"></canvas>
-    
-    <div class="content">
-        <div class="birthday-card">
-            <h1 class="title">Happy Birthday!</h1>
-            <div class="arabic-text">
-                <h2>كل عام وأنت بخير</h2>
-                <p class="subtitle">May Allah bless you with happiness and prosperity</p>
-            </div>
-            <div class="dua">
-                <h3>Birthday Dua</h3>
-                <p class="arabic-dua">اللَّهُمَّ بَارِكْ لَهُ فِي عُمْرِهِ، وَأَطِلْ حَيَاتَهُ عَلَى طَاعَتِكَ</p>
-                <p class="dua-translation">"O Allah, bless them in their age, and extend their life in Your obedience."</p>
-            </div>
-            <div class="wishes">
-                <p>May this special day bring you immense joy and Allah's blessings.</p>
-                <p>May your journey be filled with faith, good health, and prosperity.</p>
-            </div>
+  <canvas id="fireworks-canvas"></canvas>
+  <canvas id="stars-canvas"></canvas>
+  
+  <div class="content">
+    <div class="message-container">
+      <h1 id="first-message" class="message">HAPPY BIRTHDAY BRO!</h1>
+      <h2 id="second-message" class="message hidden">I AM GRATEFUL TO HAVE YOU AS A BRO!</h2>
+      <div id="name-container" class="name-container hidden">
+        <span class="name-letter">A</span>
+        <span class="name-letter">N</span>
+        <span class="name-letter">A</span>
+        <span class="name-letter">S</span>
+        <span class="name-letter">&nbsp;</span>
+        <span class="name-letter">A</span>
+        <span class="name-letter">F</span>
+        <span class="name-letter">R</span>
+        <span class="name-letter">O</span>
+        <span class="name-letter">Z</span>
+      </div>
+      <div id="islamic-blessing" class="blessing hidden">
+        <p>May Allah protect you from all harm and guide you on the straight path, and make you among the righteous and successful in both worlds.</p>
+      </div>
+      
+      <div id="photo-frame" class="photo-frame hidden">
+        <div class="frame-inner">
+          <div class="frame-message">Happy Birthday!</div>
         </div>
-        
-        <div class="audio-controls">
-            <button id="mute-btn" class="control-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-2">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                </svg>
-            </button>
-        </div>
+      </div>
     </div>
     
-    <script src="js/fireworks.js"></script>
-    <script src="js/audio.js"></script>
-    <script src="js/main.js"></script>
+    <div class="audio-controls">
+      <button id="mute-btn" class="control-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
 </body>
 </html>
