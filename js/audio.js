@@ -182,7 +182,7 @@ export class AudioController {
     
     if (!this.musicPlaying && !this.muted) {
       // Create an audio element for the music instead of generating it
-      const audioElement = new Audio('./attached_assets/WhatsApp Audio 2025-03-14 at 6.26.55 PM.mpeg');
+      const audioElement = new Audio('./assets/WhatsApp Audio 2025-03-14 at 6.26.55 PM.mpeg');
       audioElement.loop = true;
       
       // Connect to the Web Audio API for volume control

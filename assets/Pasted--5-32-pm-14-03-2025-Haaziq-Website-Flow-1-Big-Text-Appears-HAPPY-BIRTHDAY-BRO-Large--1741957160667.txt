@@ -1,0 +1,56 @@
+[5:32 pm, 14/03/2025] Haaziq: Website Flow
+
+1️⃣ Big Text Appears:
+
+🎉 "HAPPY BIRTHDAY BRO!" (Large)
+
+Fades out after a few seconds
+
+
+2️⃣ Second Text Appears:
+
+"I AM GRATEFUL TO HAVE YOU AS A BRO!" (Medium size, stays visible)
+
+
+3️⃣ Islamic Blessing Appears Below:
+
+"May Allah protect you from all harm and guide you on the straight path, and make you among the righteous and successful in both worlds." (Smallest size)
+
+
+4️⃣ Fireworks in the Background 🎆
+5️⃣ "Night Dancer (sped up)" Plays in the Background 🎵
+[5:34 pm, 14/03/2025] Haaziq: Important Notes:
+
+DO NOT use any backend (like Node.js, Python, PHP, or databases).
+The entire project should be a simple HTML, CSS, and JavaScript static website.
+The fireworks should look vibrant and exciting.
+The music should loop in the background.
+The website should be responsive for mobile and desktop.
+[5:37 pm, 14/03/2025] Haaziq: Here are some creative ideas to enhance your website flow:
+
+Visual & Animation Enhancements
+
+1️⃣ Smooth Text Transitions – Use CSS animations for text fades and entrance effects. Example:
+
+"HAPPY BIRTHDAY BRO!" fades in with a zoom effect.
+
+The second text slides in smoothly.
+
+The Islamic blessing appears with a soft glow effect.
+
+
+2️⃣ Fireworks Effect – Instead of basic fireworks, use JavaScript canvas to create colorful, randomized bursts that feel natural. Try the fireworks.js library or code your own using the HTML5 canvas API.
+
+3️⃣ Glowing Stars in the Background – Add a subtle starry effect (small twinkling dots) to make the scene feel more magical.
+
+Audio Enhancements
+
+4️⃣ Music Controls – Provide an option to pause and play the song in case your brot…
+[6:20 pm, 14/03/2025] Haaziq: Personalized Name Animation 🎇
+Show your bro name with cool glowing effects.
+Example: "Happy Birthday, [ANAS AFROZ]! 🎉" with letters appearing one by one.
+[6:21 pm, 14/03/2025] Haaziq: Animated Falling Stars & Moon 🌙✨
+Since it’s an Islamic birthday wish, you can add falling stars or a crescent moon animation in the background.
+[6:21 pm, 14/03/2025] Haaziq: A Photo Frame 📸
+Upload a photo of your brother (or a childhood picture) and display it in a cool animated frame.
+Add a hover effect to reveal a special message when the mouse moves over the image.
