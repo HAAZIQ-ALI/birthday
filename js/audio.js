@@ -2,255 +2,225 @@
  * Audio Controller
  * Handles all audio playback including background music and fireworks sounds
  */
-class AudioController {
-    constructor() {
-        this.musicPlaying = false;
-        this.muted = false;
-        this.bgMusic = null;
-        this.fireworksSound = null;
-        this.audioContext = null;
-        this.musicGain = null;
-        this.sfxGain = null;
-        this.muteButton = document.getElementById('mute-btn');
-        
-        // Initialize audio context and setup events
-        this.init();
+export class AudioController {
+  constructor() {
+    this.musicPlaying = false;
+    this.muted = false;
+    this.audioContext = null;
+    this.musicGain = null;
+    this.sfxGain = null;
+    this.muteButton = document.getElementById('mute-btn');
+    
+    // Initialize audio context and setup events
+    this.init();
+  }
+  
+  init() {
+    // Create audio context
+    this.createAudioContext();
+    
+    // Setup mute button click handler
+    this.muteButton.addEventListener('click', () => this.toggleMute());
+  }
+  
+  createAudioContext() {
+    try {
+      // Create audio context
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      this.audioContext = new AudioContext();
+      
+      // Create gain nodes for volume control
+      this.musicGain = this.audioContext.createGain();
+      this.sfxGain = this.audioContext.createGain();
+      
+      // Connect gain nodes to audio output
+      this.musicGain.connect(this.audioContext.destination);
+      this.sfxGain.connect(this.audioContext.destination);
+      
+      // Set initial volumes
+      this.musicGain.gain.value = 0.4; // Background music at 40% volume
+      this.sfxGain.gain.value = 0.3;   // Sound effects at 30% volume
+    } catch (e) {
+      console.error('Web Audio API is not supported in this browser:', e);
+    }
+  }
+  
+  // Create Night Dancer (sped up) melody using Web Audio API
+  createNightDancerMusic() {
+    if (!this.audioContext) return;
+    
+    // A simplified version of "Night Dancer" melody using Web Audio API
+    // This is a representation of the melody pattern, not the exact song
+    const bpm = 150; // Sped up tempo
+    const noteDuration = 60 / bpm;
+    
+    // Night Dancer inspired pattern (simplified)
+    const pattern = [
+      { note: 'E4', duration: 0.25, time: 0 },
+      { note: 'G4', duration: 0.25, time: 0.25 },
+      { note: 'B4', duration: 0.5, time: 0.5 },
+      { note: 'G4', duration: 0.25, time: 1 },
+      { note: 'E4', duration: 0.25, time: 1.25 },
+      { note: 'B3', duration: 0.5, time: 1.5 },
+      
+      { note: 'D4', duration: 0.25, time: 2 },
+      { note: 'F4', duration: 0.25, time: 2.25 },
+      { note: 'A4', duration: 0.5, time: 2.5 },
+      { note: 'F4', duration: 0.25, time: 3 },
+      { note: 'D4', duration: 0.25, time: 3.25 },
+      { note: 'A3', duration: 0.5, time: 3.5 },
+      
+      { note: 'C4', duration: 0.25, time: 4 },
+      { note: 'E4', duration: 0.25, time: 4.25 },
+      { note: 'G4', duration: 0.5, time: 4.5 },
+      { note: 'C5', duration: 0.5, time: 5 },
+      { note: 'G4', duration: 0.5, time: 5.5 },
+      
+      { note: 'A4', duration: 0.25, time: 6 },
+      { note: 'C5', duration: 0.25, time: 6.25 },
+      { note: 'E5', duration: 0.5, time: 6.5 },
+      { note: 'C5', duration: 0.25, time: 7 },
+      { note: 'A4', duration: 0.25, time: 7.25 },
+      { note: 'E4', duration: 0.5, time: 7.5 }
+    ];
+    
+    // Frequency map for notes
+    const noteToFrequency = {
+      'A3': 220.00, 'A#3': 233.08, 'B3': 246.94,
+      'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63, 'F4': 349.23,
+      'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+      'C5': 523.25, 'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'E5': 659.25, 'F5': 698.46,
+      'F#5': 739.99, 'G5': 783.99, 'G#5': 830.61, 'A5': 880.00
+    };
+    
+    const startTime = this.audioContext.currentTime;
+    
+    // Play each note at the specified time
+    pattern.forEach(note => {
+      const time = startTime + note.time * noteDuration;
+      const duration = note.duration * noteDuration;
+      
+      // Create oscillator
+      const oscillator = this.audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = noteToFrequency[note.note];
+      
+      // Create envelope for smoother sound
+      const envelope = this.audioContext.createGain();
+      envelope.gain.setValueAtTime(0, time);
+      envelope.gain.linearRampToValueAtTime(0.4, time + 0.05);
+      envelope.gain.linearRampToValueAtTime(0.2, time + duration - 0.05);
+      envelope.gain.linearRampToValueAtTime(0, time + duration);
+      
+      // Connect nodes
+      oscillator.connect(envelope);
+      envelope.connect(this.musicGain);
+      
+      // Schedule oscillator
+      oscillator.start(time);
+      oscillator.stop(time + duration);
+    });
+    
+    // Loop the music by scheduling the next iteration
+    const totalDuration = noteDuration * 8; // 8 beats in our pattern
+    setTimeout(() => {
+      if (!this.muted && this.musicPlaying) {
+        this.createNightDancerMusic();
+      }
+    }, totalDuration * 1000);
+  }
+  
+  createFireworkSound() {
+    if (!this.audioContext || this.muted) return;
+    
+    // Create noise buffer for firework sound
+    const bufferSize = this.audioContext.sampleRate * 1; // 1 second
+    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    // Fill buffer with noise with exponential decay
+    for (let i = 0; i < bufferSize; i++) {
+      // Generate noise
+      const noise = Math.random() * 2 - 1;
+      
+      // Apply exponential decay
+      const decay = 1 - i / bufferSize;
+      const envelope = Math.pow(decay, 3);
+      
+      data[i] = noise * envelope;
     }
     
-    init() {
-        // Create audio context
-        this.createAudioContext();
-        
-        // Setup mute button click handler
-        this.muteButton.addEventListener('click', () => this.toggleMute());
-        
-        // Load audio files
-        this.loadAudio();
+    // Create buffer source
+    const source = this.audioContext.createBufferSource();
+    source.buffer = buffer;
+    
+    // Create bandpass filter for more realistic sound
+    const filter = this.audioContext.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1000;
+    filter.Q.value = 0.7;
+    
+    // Connect nodes
+    source.connect(filter);
+    filter.connect(this.sfxGain);
+    
+    // Play sound
+    source.start();
+    return source;
+  }
+  
+  playFireworkSound() {
+    if (this.audioContext && !this.muted) {
+      this.createFireworkSound();
+    }
+  }
+  
+  startBackgroundMusic() {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
     }
     
-    createAudioContext() {
-        try {
-            // Create audio context
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
-            this.audioContext = new AudioContext();
-            
-            // Create gain nodes for volume control
-            this.musicGain = this.audioContext.createGain();
-            this.sfxGain = this.audioContext.createGain();
-            
-            // Connect gain nodes to audio output
-            this.musicGain.connect(this.audioContext.destination);
-            this.sfxGain.connect(this.audioContext.destination);
-            
-            // Set initial volumes
-            this.musicGain.gain.value = 0.4; // Background music at 40% volume
-            this.sfxGain.gain.value = 0.3;   // Sound effects at 30% volume
-        } catch (e) {
-            console.error('Web Audio API is not supported in this browser:', e);
-        }
+    if (!this.musicPlaying && !this.muted) {
+      this.musicPlaying = true;
+      this.createNightDancerMusic();
     }
+  }
+  
+  toggleMute() {
+    this.muted = !this.muted;
     
-    loadAudio() {
-        // Load background music (Night Dancer sped-up)
-        this.loadBackgroundMusic();
-        
-        // Load fireworks sound effect
-        this.loadFireworksSound();
+    if (this.muted) {
+      // Update button icon to muted state
+      this.muteButton.classList.add('muted');
+      this.muteButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-x">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+      `;
+      
+      // Mute all sounds
+      if (this.musicGain) this.musicGain.gain.value = 0;
+      if (this.sfxGain) this.sfxGain.gain.value = 0;
+    } else {
+      // Update button icon to unmuted state
+      this.muteButton.classList.remove('muted');
+      this.muteButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      `;
+      
+      // Unmute all sounds
+      if (this.musicGain) this.musicGain.gain.value = 0.4;
+      if (this.sfxGain) this.sfxGain.gain.value = 0.3;
+      
+      // Restart music if it was playing before
+      if (!this.musicPlaying) {
+        this.startBackgroundMusic();
+      }
     }
-    
-    loadBackgroundMusic() {
-        // Create night dancer music using Tone.js synthesis
-        this.createSynthMusic();
-    }
-    
-    createSynthMusic() {
-        // This is a simplified version of "Night Dancer" melody using Web Audio API
-        const audioData = {
-            bpm: 150, // Sped up tempo
-            notes: [
-                { note: 'E4', duration: 0.25, time: 0 },
-                { note: 'G4', duration: 0.25, time: 0.25 },
-                { note: 'A4', duration: 0.5, time: 0.5 },
-                { note: 'G4', duration: 0.25, time: 1 },
-                { note: 'E4', duration: 0.25, time: 1.25 },
-                { note: 'C4', duration: 0.5, time: 1.5 },
-                
-                { note: 'D4', duration: 0.25, time: 2 },
-                { note: 'F4', duration: 0.25, time: 2.25 },
-                { note: 'G4', duration: 0.5, time: 2.5 },
-                { note: 'F4', duration: 0.25, time: 3 },
-                { note: 'D4', duration: 0.25, time: 3.25 },
-                { note: 'B3', duration: 0.5, time: 3.5 },
-                
-                { note: 'C4', duration: 0.25, time: 4 },
-                { note: 'E4', duration: 0.25, time: 4.25 },
-                { note: 'G4', duration: 0.5, time: 4.5 },
-                { note: 'C5', duration: 0.5, time: 5 },
-                { note: 'G4', duration: 0.5, time: 5.5 },
-                
-                { note: 'A4', duration: 0.25, time: 6 },
-                { note: 'C5', duration: 0.25, time: 6.25 },
-                { note: 'D5', duration: 0.5, time: 6.5 },
-                { note: 'C5', duration: 0.25, time: 7 },
-                { note: 'A4', duration: 0.25, time: 7.25 },
-                { note: 'G4', duration: 0.5, time: 7.5 }
-            ]
-        };
-        
-        // Create oscillator for melody
-        this.bgMusic = this.playMelody(audioData);
-    }
-    
-    playMelody(audioData) {
-        const notesToFrequency = {
-            'C3': 130.81, 'C#3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'E3': 164.81, 'F3': 174.61,
-            'F#3': 185.00, 'G3': 196.00, 'G#3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'B3': 246.94,
-            'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63, 'F4': 349.23,
-            'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
-            'C5': 523.25, 'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'E5': 659.25, 'F5': 698.46,
-            'F#5': 739.99, 'G5': 783.99, 'G#5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'B5': 987.77
-        };
-        
-        const beatDuration = 60 / audioData.bpm;
-        
-        // Play each note at the specified time
-        audioData.notes.forEach(noteData => {
-            const startTime = this.audioContext.currentTime + noteData.time * beatDuration;
-            const stopTime = startTime + noteData.duration * beatDuration;
-            
-            // Create oscillator
-            const oscillator = this.audioContext.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = notesToFrequency[noteData.note];
-            
-            // Create envelope for smoother sound
-            const envelope = this.audioContext.createGain();
-            envelope.gain.setValueAtTime(0, startTime);
-            envelope.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
-            envelope.gain.linearRampToValueAtTime(0.2, stopTime - 0.05);
-            envelope.gain.linearRampToValueAtTime(0, stopTime);
-            
-            // Connect nodes
-            oscillator.connect(envelope);
-            envelope.connect(this.musicGain);
-            
-            // Schedule oscillator
-            oscillator.start(startTime);
-            oscillator.stop(stopTime);
-        });
-        
-        // Loop the melody by recursively calling this function
-        const totalDuration = Math.max(...audioData.notes.map(n => n.time + n.duration)) * beatDuration;
-        setTimeout(() => {
-            if (!this.muted && this.musicPlaying) {
-                this.playMelody(audioData);
-            }
-        }, totalDuration * 1000);
-        
-        return true;
-    }
-    
-    loadFireworksSound() {
-        // Create fireworks sound using audio synthesis
-        this.fireworksSound = {
-            play: () => {
-                if (this.muted) return;
-                
-                // Create noise burst for firework explosion
-                this.createFireworkBurst();
-            }
-        };
-    }
-    
-    createFireworkBurst() {
-        // Create noise buffer for firework sound
-        const bufferSize = this.audioContext.sampleRate * 1.5; // 1.5 seconds
-        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
-        const data = buffer.getChannelData(0);
-        
-        // Fill buffer with noise with exponential decay
-        for (let i = 0; i < bufferSize; i++) {
-            // Generate noise
-            const noise = Math.random() * 2 - 1;
-            
-            // Apply exponential decay
-            const decay = 1 - i / bufferSize;
-            const envelope = Math.pow(decay, 3);
-            
-            data[i] = noise * envelope;
-        }
-        
-        // Create buffer source
-        const source = this.audioContext.createBufferSource();
-        source.buffer = buffer;
-        
-        // Create bandpass filter for more realistic sound
-        const filter = this.audioContext.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 1000;
-        filter.Q.value = 0.7;
-        
-        // Connect nodes
-        source.connect(filter);
-        filter.connect(this.sfxGain);
-        
-        // Play sound
-        source.start();
-        return source;
-    }
-    
-    playFireworksSound() {
-        if (this.fireworksSound && !this.muted) {
-            this.fireworksSound.play();
-        }
-    }
-    
-    startBackgroundMusic() {
-        if (this.audioContext && this.audioContext.state === 'suspended') {
-            this.audioContext.resume();
-        }
-        
-        if (!this.musicPlaying && !this.muted) {
-            this.musicPlaying = true;
-            this.createSynthMusic();
-        }
-    }
-    
-    toggleMute() {
-        this.muted = !this.muted;
-        
-        if (this.muted) {
-            // Update button icon to muted state
-            this.muteButton.classList.add('muted');
-            this.muteButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-x">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <line x1="23" y1="9" x2="17" y2="15"></line>
-                    <line x1="17" y1="9" x2="23" y2="15"></line>
-                </svg>
-            `;
-            
-            // Mute all sounds
-            if (this.musicGain) this.musicGain.gain.value = 0;
-            if (this.sfxGain) this.sfxGain.gain.value = 0;
-        } else {
-            // Update button icon to unmuted state
-            this.muteButton.classList.remove('muted');
-            this.muteButton.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-2">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                </svg>
-            `;
-            
-            // Unmute all sounds
-            if (this.musicGain) this.musicGain.gain.value = 0.4;
-            if (this.sfxGain) this.sfxGain.gain.value = 0.3;
-            
-            // Restart music if it was playing before
-            if (!this.musicPlaying) {
-                this.startBackgroundMusic();
-            }
-        }
-    }
+  }
 }

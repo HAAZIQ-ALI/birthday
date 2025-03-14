@@ -4,280 +4,251 @@
  */
 export class Fireworks {
   constructor() {
+    // Get canvas element
     this.canvas = document.getElementById('fireworks-canvas');
     this.ctx = this.canvas.getContext('2d');
+    
+    // Set canvas dimensions
+    this.resizeCanvas();
+    
+    // Arrays to store fireworks and particles
     this.fireworks = [];
     this.particles = [];
-    this.hue = 120;
-    this.limiterTotal = 5;
-    this.limiterTick = 0;
-    this.timerTotal = 80;
-    this.timerTick = 0;
-    this.mousedown = false;
-    this.mx = 0;
-    this.my = 0;
     
-    this.resizeCanvas();
-    window.addEventListener('resize', () => this.resizeCanvas());
-    
-    // Automatically launch fireworks periodically
+    // Status
+    this.running = false;
     this.autoFireworks = true;
     
-    // Callback for sound effects
+    // Callback for sound
     this.onFireworkExplode = null;
+    
+    // Handle window resize
+    window.addEventListener('resize', () => this.resizeCanvas());
+    
+    // Add click listener for manual fireworks
+    this.canvas.addEventListener('click', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      this.createFirework(
+        this.canvas.width / 2, 
+        this.canvas.height, 
+        x, 
+        y
+      );
+    });
   }
   
+  // Update canvas dimensions
   resizeCanvas() {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
   }
   
-  // Create firework
+  // Create a new firework
   createFirework(startX, startY, targetX, targetY) {
-    const firework = {
-      // Start coordinates
+    // Calculate angle and distance
+    const angle = Math.atan2(targetY - startY, targetX - startX);
+    const velocity = 2 + Math.random() * 3;
+    
+    // Random hue for this firework
+    const hue = Math.floor(Math.random() * 360);
+    
+    // Add to fireworks array
+    this.fireworks.push({
       x: startX,
       y: startY,
-      // Starting coordinates
       startX: startX,
       startY: startY,
-      // End coordinates
       targetX: targetX,
       targetY: targetY,
-      // Distance to target
-      distanceToTarget: this.calculateDistance(startX, startY, targetX, targetY),
-      distanceTraveled: 0,
-      // Track past coordinates to create trail effect
-      coordinates: [],
-      coordinateCount: 3,
-      // Current angle
-      angle: Math.atan2(targetY - startY, targetX - startX),
-      // Speed and acceleration
-      speed: 2,
-      acceleration: 1.05,
-      // Random brightness
-      brightness: this.randomInRange(50, 70),
-      // Random hue
-      hue: this.randomInRange(0, 360),
-      // Track lifespan
+      speed: velocity,
+      angle: angle,
+      hue: hue,
+      brightness: 50 + Math.floor(Math.random() * 50),
       alpha: 1,
-      decay: 0.02
-    };
-    
-    // Set coordinates to current location
-    for (let i = 0; i < firework.coordinateCount; i++) {
-      firework.coordinates.push([firework.x, firework.y]);
-    }
-    
-    this.fireworks.push(firework);
+      trail: []
+    });
   }
   
-  // Create particle
+  // Create explosion particles
   createParticles(x, y, count, hue) {
-    for (let i = 0; i < count; i++) {
-      const particle = {
-        // Position
-        x: x,
-        y: y,
-        // Track past coordinates to create trail effect
-        coordinates: [],
-        coordinateCount: 5,
-        // Set random speed and direction
-        angle: this.randomInRange(0, Math.PI * 2),
-        speed: this.randomInRange(1, 10),
-        // Decreasing speed for realistic effect
-        friction: 0.95,
-        // Gravity pull
-        gravity: 1,
-        // Random hue
-        hue: this.randomInRange(hue - 50, hue + 50),
-        // Random brightness
-        brightness: this.randomInRange(50, 80),
-        // Track lifespan
-        alpha: 1,
-        decay: this.randomInRange(0.015, 0.03)
-      };
-      
-      // Set coordinates to current location
-      for (let i = 0; i < particle.coordinateCount; i++) {
-        particle.coordinates.push([particle.x, particle.y]);
-      }
-      
-      this.particles.push(particle);
-    }
-    
-    // Call the callback if provided
-    if (this.onFireworkExplode) {
+    // Call the sound callback if it exists
+    if (typeof this.onFireworkExplode === 'function') {
       this.onFireworkExplode();
     }
-  }
-  
-  // Update firework
-  updateFirework(firework, index) {
-    // Remove last coordinate in array
-    firework.coordinates.pop();
-    // Add current coordinate to the beginning
-    firework.coordinates.unshift([firework.x, firework.y]);
     
-    // Speed up firework
-    firework.speed *= firework.acceleration;
-    
-    // Get current velocities based on angle and speed
-    const vx = Math.cos(firework.angle) * firework.speed;
-    const vy = Math.sin(firework.angle) * firework.speed;
-    
-    // Update distance traveled with velocities
-    firework.distanceTraveled = this.calculateDistance(
-      firework.startX, firework.startY, firework.x + vx, firework.y + vy
-    );
-    
-    // If distance traveled > the original distance, target has been reached
-    if (firework.distanceTraveled >= firework.distanceToTarget) {
-      // Create burst particles at target location
-      this.createParticles(firework.targetX, firework.targetY, 100, firework.hue);
-      // Remove firework from array
-      this.fireworks.splice(index, 1);
-    } else {
-      // Keep going
-      firework.x += vx;
-      firework.y += vy;
+    // Create particles
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 5 + 1;
+      
+      this.particles.push({
+        x: x,
+        y: y,
+        speed: speed,
+        angle: angle,
+        hue: hue + Math.random() * 30 - 15,
+        brightness: 50 + Math.floor(Math.random() * 50),
+        alpha: 1,
+        decay: 0.015 + Math.random() * 0.03
+      });
     }
   }
   
-  // Update particle
+  // Update firework position
+  updateFirework(firework, index) {
+    // Add current position to trail
+    firework.trail.push({x: firework.x, y: firework.y, alpha: firework.alpha});
+    
+    // Limit trail length
+    if (firework.trail.length > 5) {
+      firework.trail.shift();
+    }
+    
+    // Update position
+    firework.x += Math.cos(firework.angle) * firework.speed;
+    firework.y += Math.sin(firework.angle) * firework.speed;
+    
+    // Reduce alpha near target
+    const distanceToTarget = this.calculateDistance(firework.x, firework.y, firework.targetX, firework.targetY);
+    if (distanceToTarget < 15) {
+      // Create explosion
+      this.createParticles(firework.x, firework.y, 80, firework.hue);
+      
+      // Remove firework
+      this.fireworks.splice(index, 1);
+    }
+  }
+  
+  // Update particle position
   updateParticle(particle, index) {
-    // Remove last coordinate in array
-    particle.coordinates.pop();
-    // Add current coordinate to the beginning
-    particle.coordinates.unshift([particle.x, particle.y]);
-    
-    // Slow down by applying friction
-    particle.speed *= particle.friction;
-    
-    // Apply velocity to current position
+    // Update position
     particle.x += Math.cos(particle.angle) * particle.speed;
-    particle.y += Math.sin(particle.angle) * particle.speed + particle.gravity;
+    particle.y += Math.sin(particle.angle) * particle.speed;
     
-    // Fade out particle
+    // Apply gravity
+    particle.speed *= 0.96;
+    
+    // Reduce alpha (fade out)
     particle.alpha -= particle.decay;
     
-    // If alpha is less than threshold, remove particle from array
-    if (particle.alpha <= 0.1) {
+    // Remove when alpha is too low
+    if (particle.alpha <= 0.05) {
       this.particles.splice(index, 1);
     }
   }
   
   // Draw firework
   drawFirework(firework) {
-    // Movement tracking
-    const lastCoordinate = firework.coordinates[firework.coordinates.length - 1];
-    
+    // Draw trail
     this.ctx.beginPath();
-    // Move to last tracked coordinate
-    this.ctx.moveTo(lastCoordinate[0], lastCoordinate[1]);
-    // Draw line to current position
-    this.ctx.lineTo(firework.x, firework.y);
-    this.ctx.strokeStyle = `hsl(${firework.hue}, 100%, ${firework.brightness}%)`;
-    this.ctx.stroke();
+    
+    // Trail gradient
+    const trailGradient = this.ctx.createLinearGradient(
+      firework.trail[0]?.x || firework.x,
+      firework.trail[0]?.y || firework.y,
+      firework.x,
+      firework.y
+    );
+    
+    trailGradient.addColorStop(0, `hsla(${firework.hue}, 100%, ${firework.brightness}%, 0)`);
+    trailGradient.addColorStop(1, `hsla(${firework.hue}, 100%, ${firework.brightness}%, ${firework.alpha})`);
+    
+    this.ctx.strokeStyle = trailGradient;
+    this.ctx.lineWidth = 3;
+    
+    // Draw the trail path
+    if (firework.trail.length > 1) {
+      this.ctx.moveTo(firework.trail[0].x, firework.trail[0].y);
+      for (let i = 1; i < firework.trail.length; i++) {
+        this.ctx.lineTo(firework.trail[i].x, firework.trail[i].y);
+      }
+      this.ctx.lineTo(firework.x, firework.y);
+      this.ctx.stroke();
+    }
+    
+    // Draw the firework point
+    this.ctx.beginPath();
+    this.ctx.arc(firework.x, firework.y, 3, 0, Math.PI * 2);
+    this.ctx.fillStyle = `hsla(${firework.hue}, 100%, ${firework.brightness}%, ${firework.alpha})`;
+    this.ctx.fill();
   }
   
   // Draw particle
   drawParticle(particle) {
-    // Movement tracking
-    const lastCoordinate = particle.coordinates[particle.coordinates.length - 1];
-    
     this.ctx.beginPath();
-    // Move to last tracked coordinate
-    this.ctx.moveTo(lastCoordinate[0], lastCoordinate[1]);
-    // Draw line to current position
-    this.ctx.lineTo(particle.x, particle.y);
-    this.ctx.strokeStyle = `hsla(${particle.hue}, 100%, ${particle.brightness}%, ${particle.alpha})`;
-    this.ctx.stroke();
+    this.ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
+    this.ctx.fillStyle = `hsla(${particle.hue}, 100%, ${particle.brightness}%, ${particle.alpha})`;
+    this.ctx.fill();
   }
   
-  // Utility: Random range function
+  // Helper: Random number within range
   randomInRange(min, max) {
     return Math.random() * (max - min) + min;
   }
   
-  // Utility: Calculate distance between points
+  // Helper: Calculate distance between points
   calculateDistance(p1x, p1y, p2x, p2y) {
     const xDistance = p1x - p2x;
     const yDistance = p1y - p2y;
-    return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+    return Math.sqrt(xDistance * xDistance + yDistance * yDistance);
   }
   
-  // Main animation loop
+  // Animation loop
   animate() {
-    // Request animation frame
-    requestAnimationFrame(() => this.animate());
+    if (!this.running) return;
     
-    // Clear canvas
-    this.ctx.globalComposite = 'destination-out';
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    // Clear canvas with transparent overlay for trail effect
+    this.ctx.fillStyle = 'rgba(10, 10, 23, 0.2)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.globalComposite = 'lighter';
+    
+    // Create random fireworks
+    if (this.autoFireworks && Math.random() < 0.03) {
+      this.createRandomFirework();
+    }
     
     // Update and draw fireworks
-    for (let i = 0; i < this.fireworks.length; i++) {
+    for (let i = this.fireworks.length - 1; i >= 0; i--) {
       this.updateFirework(this.fireworks[i], i);
       this.drawFirework(this.fireworks[i]);
     }
     
     // Update and draw particles
-    for (let i = 0; i < this.particles.length; i++) {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
       this.updateParticle(this.particles[i], i);
       this.drawParticle(this.particles[i]);
     }
     
-    // Auto launch fireworks
-    if (this.autoFireworks) {
-      this.timerTick++;
-      
-      if (this.timerTick >= this.timerTotal) {
-        if (!this.limiterTick || this.limiterTick >= this.limiterTotal) {
-          this.createRandomFirework();
-          this.limiterTick = 0;
-        }
-        
-        this.timerTick = 0;
-        this.limiterTick++;
-      }
-    }
-    
-    // Cycle through hue
-    this.hue += 0.5;
+    // Request next frame
+    requestAnimationFrame(() => this.animate());
   }
   
-  // Create random firework
+  // Create a random firework
   createRandomFirework() {
-    const startX = this.canvas.width / 2;
+    const startX = this.randomInRange(this.canvas.width * 0.2, this.canvas.width * 0.8);
     const startY = this.canvas.height;
-    const targetX = this.randomInRange(0, this.canvas.width);
-    const targetY = this.randomInRange(0, this.canvas.height / 2);
+    const targetX = this.randomInRange(50, this.canvas.width - 50);
+    const targetY = this.randomInRange(50, this.canvas.height * 0.5);
     
     this.createFirework(startX, startY, targetX, targetY);
   }
   
-  // Create a burst of multiple fireworks
+  // Create multiple fireworks at once
   createFireworkBurst() {
-    const count = Math.floor(Math.random() * 3) + 2; // 2 to 4 fireworks
-    
-    for (let i = 0; i < count; i++) {
+    const burstCount = Math.floor(Math.random() * 3) + 3;
+    for (let i = 0; i < burstCount; i++) {
       setTimeout(() => {
         this.createRandomFirework();
-      }, i * 300); // Stagger the fireworks by 300ms
+      }, i * 200);
     }
   }
   
-  // Initialize animation
+  // Start animation
   start() {
-    // Create initial batch of fireworks
-    for (let i = 0; i < 3; i++) {
-      this.createRandomFirework();
+    if (!this.running) {
+      this.running = true;
+      this.animate();
     }
-    
-    // Start animation loop
-    this.animate();
   }
 }
