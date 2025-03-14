@@ -181,8 +181,22 @@ export class AudioController {
     }
     
     if (!this.musicPlaying && !this.muted) {
+      // Create an audio element for the music instead of generating it
+      const audioElement = new Audio('./attached_assets/WhatsApp Audio 2025-03-14 at 6.26.55 PM.mpeg');
+      audioElement.loop = true;
+      
+      // Connect to the Web Audio API for volume control
+      const source = this.audioContext.createMediaElementSource(audioElement);
+      source.connect(this.musicGain);
+      
+      // Start playback
+      audioElement.play().catch(e => {
+        console.error('Error playing audio:', e);
+      });
+      
+      // Store the audio element for later reference
+      this.musicElement = audioElement;
       this.musicPlaying = true;
-      this.createNightDancerMusic();
     }
   }
   
@@ -203,6 +217,11 @@ export class AudioController {
       // Mute all sounds
       if (this.musicGain) this.musicGain.gain.value = 0;
       if (this.sfxGain) this.sfxGain.gain.value = 0;
+      
+      // Pause the audio element if it exists
+      if (this.musicElement && !this.musicElement.paused) {
+        this.musicElement.pause();
+      }
     } else {
       // Update button icon to unmuted state
       this.muteButton.classList.remove('muted');
@@ -217,8 +236,13 @@ export class AudioController {
       if (this.musicGain) this.musicGain.gain.value = 0.4;
       if (this.sfxGain) this.sfxGain.gain.value = 0.3;
       
-      // Restart music if it was playing before
-      if (!this.musicPlaying) {
+      // Resume the audio element if it exists
+      if (this.musicElement) {
+        this.musicElement.play().catch(e => {
+          console.error('Error playing audio:', e);
+        });
+      } else if (!this.musicPlaying) {
+        // Start music if it wasn't playing before
         this.startBackgroundMusic();
       }
     }
